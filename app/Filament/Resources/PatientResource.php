@@ -23,7 +23,40 @@ class PatientResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Select::make('type')
+                    ->options([
+                        'Type A' => 'Type A',
+                        'Type B' => 'Type B',
+                    ])
+                    ->native(false)
+                    ->preload()
+                    ->required(),
+                Forms\Components\DatePicker::make('date_of_birth')
+                    ->required()
+                    ->maxDate(now()),
+                Forms\Components\Select::make('owner_id')
+                    ->relationship('owner', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email address')
+                            ->email()
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Phone number')
+                            ->tel()
+                            ->required(),
+                    ])
+                    ->required()
             ]);
     }
 
@@ -31,10 +64,21 @@ class PatientResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('date_of_birth')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('owner.name')
+                    ->searchable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('type')
+                    ->options([
+                        'Type A' => 'Type A',
+                        'Type B' => 'Type B',
+                    ])
+                    ->native(false),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -45,14 +89,14 @@ class PatientResource extends Resource
                 ]),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TreatmentsRelationManager::class,
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -60,5 +104,5 @@ class PatientResource extends Resource
             'create' => Pages\CreatePatient::route('/create'),
             'edit' => Pages\EditPatient::route('/{record}/edit'),
         ];
-    }    
+    }
 }
